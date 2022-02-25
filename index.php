@@ -53,18 +53,27 @@ try {
     }
 
     //4
+    //Having regroupe les fonctions MIN MAX COUNT AVG en même temps et peut être orienté comme ci-dessous.
     $stm = $bdd->prepare("
-        SELECT username FROM user WHERE id = (SELECT count(user_fk) FROM article)
-    ");
+        SELECT username FROM user
+            WHERE id = ANY (SELECT user_fk FROM article HAVING count(user_fk) >= 2)
+");
 
-    if ($stm->execute()) {
-        foreach ($stm->fetchAll() as $item) {
-            echo $item['username'] . " ont écrit deux articles <br>";
-        }
-    }
+    $stm->execute();
+    echo '<pre>';
+    print_r($stm->fetchAll());
+    echo "</pre><br>";
 
     //5
+    $stm = $bdd->prepare("
+        SELECT username FROM user WHERE username LIKE 'jane%'
+            AND id = ALL (SELECT user_fk FROM article)
+    ");
 
+    $stm->execute();
+    echo '<pre>';
+    print_r($stm->fetchAll());
+    echo "</pre><br>";
 
 }
 catch (PDOException $e) {
